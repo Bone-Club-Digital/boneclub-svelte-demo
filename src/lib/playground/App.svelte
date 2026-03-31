@@ -1,6 +1,51 @@
 <script>
 	import { onMount } from 'svelte';
 
+	const ua = navigator.userAgent;
+	const isSafari =
+		/safari/i.test(ua) &&
+		!/chrome|android|crios|fxios|edgios/i.test(ua);
+
+	let isMobile = false;
+	let entering = false;
+	let buttonFading = false;
+	let showLoginModal = false;
+	let loggingIn = false;
+
+	let interiorVideoVisible = false;
+	let interiorVideoReady = false;
+	let interiorVideoEl;
+	let showFloatingPanels = false;
+
+	let steamLeft = 78;
+	let steamTop = 68;
+	let steamWidth = 100;
+	let steamTranslateX = -50;
+	let steamTranslateY = -50;
+
+	let steamLeftMobile = 83.5;
+	let steamTopMobile = 76.5;
+	let steamWidthMobile = 84;
+	let steamTranslateXMobile = -50;
+	let steamTranslateYMobile = -50;
+
+	let buttonLeft = 17.5;
+	let buttonTop = 88;
+	let buttonTranslateX = -50;
+	let buttonTranslateY = -50;
+
+	let zoomScale = 2.55;
+	let zoomX = 23;
+	let zoomY = -34;
+
+	let loginZoomScale = 3.7;
+	let loginZoomX = 38;
+	let loginZoomY = -52;
+
+	const zoomDuration = 4800;
+	const modalLeadTime = 3000;
+	const blackCoverDuration = 2200;
+
 	const panels = [
 		{
 			title: 'Play',
@@ -24,61 +69,7 @@
 		}
 	];
 
-	let isSafari = $state(false);
-	let isMobile = $state(false);
-	let entering = $state(false);
-	let buttonFading = $state(false);
-	let showLoginModal = $state(false);
-	let loggingIn = $state(false);
-
-	let interiorVideoVisible = $state(false);
-	let interiorVideoReady = $state(false);
-	let interiorVideoEl = $state();
-	let showFloatingPanels = $state(false);
-
-	let steamLeft = $state(78);
-	let steamTop = $state(68);
-	let steamWidth = $state(100);
-	let steamTranslateX = $state(-50);
-	let steamTranslateY = $state(-50);
-
-	let steamLeftMobile = $state(83.5);
-	let steamTopMobile = $state(76.5);
-	let steamWidthMobile = $state(84);
-	let steamTranslateXMobile = $state(-50);
-	let steamTranslateYMobile = $state(-50);
-
-	let buttonLeft = $state(17.5);
-	let buttonTop = $state(88);
-	let buttonTranslateX = $state(-50);
-	let buttonTranslateY = $state(-50);
-
-	let zoomScale = $state(2.55);
-	let zoomX = $state(23);
-	let zoomY = $state(-34);
-
-	let loginZoomScale = $state(3.7);
-	let loginZoomX = $state(38);
-	let loginZoomY = $state(-52);
-
-	const zoomDuration = 4800;
-	const modalLeadTime = 3000;
-	const blackCoverDuration = 2200;
-
-	const cameraTransform = $derived(
-		loggingIn
-			? `translate(${loginZoomX}%, ${loginZoomY}%) scale(${loginZoomScale})`
-			: entering
-				? `translate(${zoomX}%, ${zoomY}%) scale(${zoomScale})`
-				: 'translate(0%, 0%) scale(1)'
-	);
-
 	onMount(() => {
-		const ua = navigator.userAgent;
-		isSafari =
-			/safari/i.test(ua) &&
-			!/chrome|android|crios|fxios|edgios/i.test(ua);
-
 		const mq = window.matchMedia('(max-width: 640px)');
 
 		const update = () => {
@@ -88,9 +79,7 @@
 		update();
 		mq.addEventListener('change', update);
 
-		return () => {
-			mq.removeEventListener('change', update);
-		};
+		return () => mq.removeEventListener('change', update);
 	});
 
 	function handleEnter() {
@@ -111,7 +100,6 @@
 		showLoginModal = false;
 		interiorVideoVisible = false;
 		showFloatingPanels = false;
-		interiorVideoReady = false;
 
 		setTimeout(async () => {
 			interiorVideoVisible = true;
@@ -135,11 +123,15 @@
 	function handleInteriorEnded() {
 		showFloatingPanels = true;
 	}
-</script>
 
-<svelte:head>
-	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-</svelte:head>
+	const cameraTransform = $derived(
+	loggingIn
+		? `translate(${loginZoomX}%, ${loginZoomY}%) scale(${loginZoomScale})`
+		: entering
+			? `translate(${zoomX}%, ${zoomY}%) scale(${zoomScale})`
+			: 'translate(0%, 0%) scale(1)'
+);
+</script>
 
 <div
 	class="scene"
@@ -193,9 +185,9 @@
 			class="interior-video"
 			playsinline
 			preload="auto"
-			onloadeddata={handleInteriorReady}
-			oncanplaythrough={handleInteriorReady}
-			onended={handleInteriorEnded}
+			on:loadeddata={handleInteriorReady}
+			on:canplaythrough={handleInteriorReady}
+			on:ended={handleInteriorEnded}
 		>
 			<source
 				src="https://www.boneclub.co.uk/have_bones_character_welcome_y_Kling_30__45175.mp4"
@@ -222,7 +214,7 @@
 			transform: translate({buttonTranslateX}%, {buttonTranslateY}%);
 		"
 	>
-		<button class="fancy-btn enter-btn" type="button" onclick={handleEnter}>
+		<button class="fancy-btn enter-btn" type="button" on:click={handleEnter}>
 			<span>
 				<span class="spark"></span>
 			</span>
@@ -254,7 +246,7 @@
 				</label>
 
 				<div class="modal-actions">
-					<button class="modal-btn primary" type="button" onclick={handleLogin}>Login</button>
+					<button class="modal-btn primary" type="button" on:click={handleLogin}>Login</button>
 					<button class="modal-btn secondary" type="button">Request invitation</button>
 				</div>
 			</div>
@@ -265,25 +257,6 @@
 </div>
 
 <style>
-	:global(html, body) {
-		margin: 0;
-		padding: 0;
-		width: 100%;
-		height: 100%;
-		background: #000;
-		overflow: hidden;
-	}
-
-	:global(body) {
-		touch-action: manipulation;
-		overscroll-behavior: none;
-	}
-
-	:global(#app) {
-		width: 100%;
-		height: 100%;
-	}
-
 	:root {
 		--bc-off: #e16a38;
 		--bc-hover: #377e7f;
@@ -293,12 +266,10 @@
 	}
 
 	.scene {
-		position: fixed;
-		inset: 0;
-		width: 100vw;
-		height: 100vh;
-		max-width: none;
-		aspect-ratio: auto;
+		position: relative;
+		width: 100%;
+		max-width: 1440px;
+		aspect-ratio: 16 / 9;
 		overflow: hidden;
 		background-color: #111;
 		background-image: url('https://www.boneclub.co.uk/exterior.jpg');
@@ -345,7 +316,7 @@
 
 	.steam.safari {
 		mix-blend-mode: screen;
-		opacity: 1;
+		opacity: 0;
 	}
 
 	.interior-video-layer {
@@ -697,6 +668,10 @@
 	}
 
 	@media (max-width: 640px) {
+		.scene {
+			aspect-ratio: 16 / 11;
+		}
+
 		.steam {
 			opacity: 0.38;
 		}
