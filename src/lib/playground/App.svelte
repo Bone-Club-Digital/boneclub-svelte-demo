@@ -1,52 +1,84 @@
 <script>
 	import { onMount } from 'svelte';
 
-	const ua = navigator.userAgent;
-	const isSafari =
-		/safari/i.test(ua) &&
-		!/chrome|android|crios|fxios|edgios/i.test(ua);
+	const panels = [
+		{
+			title: 'Play',
+			text: 'Enter live matches, private rooms and club tables for elegant competitive play.'
+		},
+		{
+			title: 'Learn',
+			text: 'Sharpen your game with lessons, strategy, analysis and expert guidance.'
+		},
+		{
+			title: 'Watch',
+			text: 'Enjoy featured matches, streams and cinematic backgammon content from the club.'
+		},
+		{
+			title: 'Social',
+			text: 'Meet members, join conversations and experience the atmosphere beyond the board.'
+		},
+		{
+			title: 'Shop',
+			text: 'Explore boards, club goods and carefully curated Bone Club pieces.'
+		}
+	];
 
-	let isMobile = false;
-	let accordionOpen = false;
-	let entering = false;
-	let buttonFading = false;
-	let showLoginModal = false;
-	let loggingIn = false;
+	let isSafari = $state(false);
+	let isMobile = $state(false);
+	let entering = $state(false);
+	let buttonFading = $state(false);
+	let showLoginModal = $state(false);
+	let loggingIn = $state(false);
 
-	let interiorVideoVisible = false;
-	let interiorVideoReady = false;
-	let interiorVideoEl;
+	let interiorVideoVisible = $state(false);
+	let interiorVideoReady = $state(false);
+	let interiorVideoEl = $state();
+	let showFloatingPanels = $state(false);
 
-	let steamLeft = 78;
-	let steamTop = 68;
-	let steamWidth = 100;
-	let steamTranslateX = -50;
-	let steamTranslateY = -50;
+	let steamLeft = $state(78);
+	let steamTop = $state(68);
+	let steamWidth = $state(100);
+	let steamTranslateX = $state(-50);
+	let steamTranslateY = $state(-50);
 
-	let steamLeftMobile = 83.5;
-	let steamTopMobile = 76.5;
-	let steamWidthMobile = 84;
-	let steamTranslateXMobile = -50;
-	let steamTranslateYMobile = -50;
+	let steamLeftMobile = $state(83.5);
+	let steamTopMobile = $state(76.5);
+	let steamWidthMobile = $state(84);
+	let steamTranslateXMobile = $state(-50);
+	let steamTranslateYMobile = $state(-50);
 
-	let buttonLeft = 17.5;
-	let buttonTop = 88;
-	let buttonTranslateX = -50;
-	let buttonTranslateY = -50;
+	let buttonLeft = $state(17.5);
+	let buttonTop = $state(88);
+	let buttonTranslateX = $state(-50);
+	let buttonTranslateY = $state(-50);
 
-	let zoomScale = 2.55;
-	let zoomX = 23;
-	let zoomY = -34;
+	let zoomScale = $state(2.55);
+	let zoomX = $state(23);
+	let zoomY = $state(-34);
 
-	let loginZoomScale = 3.7;
-	let loginZoomX = 38;
-	let loginZoomY = -52;
+	let loginZoomScale = $state(3.7);
+	let loginZoomX = $state(38);
+	let loginZoomY = $state(-52);
 
 	const zoomDuration = 4800;
 	const modalLeadTime = 3000;
 	const blackCoverDuration = 2200;
 
+	const cameraTransform = $derived(
+		loggingIn
+			? `translate(${loginZoomX}%, ${loginZoomY}%) scale(${loginZoomScale})`
+			: entering
+				? `translate(${zoomX}%, ${zoomY}%) scale(${zoomScale})`
+				: 'translate(0%, 0%) scale(1)'
+	);
+
 	onMount(() => {
+		const ua = navigator.userAgent;
+		isSafari =
+			/safari/i.test(ua) &&
+			!/chrome|android|crios|fxios|edgios/i.test(ua);
+
 		const mq = window.matchMedia('(max-width: 640px)');
 
 		const update = () => {
@@ -56,7 +88,9 @@
 		update();
 		mq.addEventListener('change', update);
 
-		return () => mq.removeEventListener('change', update);
+		return () => {
+			mq.removeEventListener('change', update);
+		};
 	});
 
 	function handleEnter() {
@@ -76,6 +110,8 @@
 		loggingIn = true;
 		showLoginModal = false;
 		interiorVideoVisible = false;
+		showFloatingPanels = false;
+		interiorVideoReady = false;
 
 		setTimeout(async () => {
 			interiorVideoVisible = true;
@@ -96,147 +132,21 @@
 		interiorVideoReady = true;
 	}
 
-	$: cameraTransform = loggingIn
-		? `translate(${loginZoomX}%, ${loginZoomY}%) scale(${loginZoomScale})`
-		: entering
-			? `translate(${zoomX}%, ${zoomY}%) scale(${zoomScale})`
-			: 'translate(0%, 0%) scale(1)';
+	function handleInteriorEnded() {
+		showFloatingPanels = true;
+	}
 </script>
 
-<div class="controls">
-	<button
-		class="accordion-toggle"
-		type="button"
-		on:click={() => (accordionOpen = !accordionOpen)}
-		aria-expanded={accordionOpen}
-	>
-		<span>Steam + button + camera controls</span>
-		<span class:open={accordionOpen} class="chevron">▼</span>
-	</button>
-
-	{#if accordionOpen}
-		<div class="accordion-panel">
-			<h3>Desktop</h3>
-
-			<div class="control">
-				<label>Left: {steamLeft}%</label>
-				<input type="range" min="-50" max="100" step="0.5" bind:value={steamLeft} />
-			</div>
-
-			<div class="control">
-				<label>Top: {steamTop}%</label>
-				<input type="range" min="-50" max="100" step="0.5" bind:value={steamTop} />
-			</div>
-
-			<div class="control">
-				<label>Width: {steamWidth}vw</label>
-				<input type="range" min="10" max="120" step="1" bind:value={steamWidth} />
-			</div>
-
-			<div class="control">
-				<label>Translate X: {steamTranslateX}%</label>
-				<input type="range" min="-100" max="100" step="1" bind:value={steamTranslateX} />
-			</div>
-
-			<div class="control">
-				<label>Translate Y: {steamTranslateY}%</label>
-				<input type="range" min="-100" max="100" step="1" bind:value={steamTranslateY} />
-			</div>
-
-			<h3>Mobile</h3>
-
-			<div class="control">
-				<label>Left: {steamLeftMobile}%</label>
-				<input type="range" min="-50" max="100" step="0.5" bind:value={steamLeftMobile} />
-			</div>
-
-			<div class="control">
-				<label>Top: {steamTopMobile}%</label>
-				<input type="range" min="-50" max="100" step="0.5" bind:value={steamTopMobile} />
-			</div>
-
-			<div class="control">
-				<label>Width: {steamWidthMobile}vw</label>
-				<input type="range" min="10" max="150" step="1" bind:value={steamWidthMobile} />
-			</div>
-
-			<div class="control">
-				<label>Translate X: {steamTranslateXMobile}%</label>
-				<input type="range" min="-100" max="100" step="1" bind:value={steamTranslateXMobile} />
-			</div>
-
-			<div class="control">
-				<label>Translate Y: {steamTranslateYMobile}%</label>
-				<input type="range" min="-100" max="100" step="1" bind:value={steamTranslateYMobile} />
-			</div>
-
-			<h3>Button</h3>
-
-			<div class="control">
-				<label>Left: {buttonLeft}%</label>
-				<input type="range" min="0" max="100" step="0.5" bind:value={buttonLeft} />
-			</div>
-
-			<div class="control">
-				<label>Top: {buttonTop}%</label>
-				<input type="range" min="0" max="100" step="0.5" bind:value={buttonTop} />
-			</div>
-
-			<div class="control">
-				<label>Translate X: {buttonTranslateX}%</label>
-				<input type="range" min="-100" max="100" step="1" bind:value={buttonTranslateX} />
-			</div>
-
-			<div class="control">
-				<label>Translate Y: {buttonTranslateY}%</label>
-				<input type="range" min="-100" max="100" step="1" bind:value={buttonTranslateY} />
-			</div>
-
-			<h3>Camera</h3>
-
-			<div class="control">
-				<label>Zoom scale: {zoomScale}</label>
-				<input type="range" min="1" max="4" step="0.01" bind:value={zoomScale} />
-			</div>
-
-			<div class="control">
-				<label>Zoom X: {zoomX}%</label>
-				<input type="range" min="-50" max="50" step="0.5" bind:value={zoomX} />
-			</div>
-
-			<div class="control">
-				<label>Zoom Y: {zoomY}%</label>
-				<input type="range" min="-50" max="50" step="0.5" bind:value={zoomY} />
-			</div>
-
-			<h3>Login zoom</h3>
-
-			<div class="control">
-				<label>Login zoom scale: {loginZoomScale}</label>
-				<input type="range" min="1" max="6" step="0.01" bind:value={loginZoomScale} />
-			</div>
-
-			<div class="control">
-				<label>Login zoom X: {loginZoomX}%</label>
-				<input type="range" min="-50" max="50" step="0.5" bind:value={loginZoomX} />
-			</div>
-
-			<div class="control">
-				<label>Login zoom Y: {loginZoomY}%</label>
-				<input type="range" min="-50" max="50" step="0.5" bind:value={loginZoomY} />
-			</div>
-
-			<p>Currently using: <strong>{isMobile ? 'mobile' : 'desktop'}</strong> values</p>
-			<p>Interior video ready: <strong>{interiorVideoReady ? 'yes' : 'loading'}</strong></p>
-		</div>
-	{/if}
-</div>
+<svelte:head>
+	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+</svelte:head>
 
 <div
 	class="scene"
 	class:entering={entering}
 	class:logging-in={loggingIn}
 	class:interior-visible={interiorVideoVisible}
+	class:show-panels={showFloatingPanels}
 >
 	<div
 		class="camera"
@@ -259,21 +169,21 @@
 			"
 		>
 			<video
-	class="steam"
-	class:safari={isSafari}
-	autoplay
-	muted
-	loop
-	playsinline
-	preload="auto"
-	webkit-playsinline="true"
->
-	{#if isSafari}
-		<source src="" type='video/mp4; codecs="hvc1"' />
-	{:else}
-		<source src="" type="video/webm" />
-	{/if}
-</video>
+				class="steam"
+				class:safari={isSafari}
+				autoplay
+				muted
+				loop
+				playsinline
+				preload="auto"
+				webkit-playsinline="true"
+			>
+				{#if isSafari}
+					<source src="https://www.boneclub.co.uk/steam2.mov" type='video/mp4; codecs="hvc1"' />
+				{:else}
+					<source src="https://www.boneclub.co.uk/smoke.webm" type="video/webm" />
+				{/if}
+			</video>
 		</div>
 	</div>
 
@@ -283,14 +193,24 @@
 			class="interior-video"
 			playsinline
 			preload="auto"
-			on:loadeddata={handleInteriorReady}
-			on:canplaythrough={handleInteriorReady}
+			onloadeddata={handleInteriorReady}
+			oncanplaythrough={handleInteriorReady}
+			onended={handleInteriorEnded}
 		>
 			<source
-				src="https://video.wixstatic.com/video/f92ddd_6cd1eedb3a2d4ffeacd309bf30545c65/1080p/mp4/file.mp4"
+				src="https://www.boneclub.co.uk/have_bones_character_welcome_y_Kling_30__45175.mp4"
 				type="video/mp4"
 			/>
 		</video>
+
+		<div class="floating-panels" class:visible={showFloatingPanels}>
+			{#each panels as panel, index}
+				<div class="floating-panel" style={`transition-delay: ${index * 0.35}s;`}>
+					<h3>{panel.title}</h3>
+					<p>{panel.text}</p>
+				</div>
+			{/each}
+		</div>
 	</div>
 
 	<div
@@ -302,7 +222,7 @@
 			transform: translate({buttonTranslateX}%, {buttonTranslateY}%);
 		"
 	>
-		<button class="fancy-btn enter-btn" type="button" on:click={handleEnter}>
+		<button class="fancy-btn enter-btn" type="button" onclick={handleEnter}>
 			<span>
 				<span class="spark"></span>
 			</span>
@@ -334,7 +254,7 @@
 				</label>
 
 				<div class="modal-actions">
-					<button class="modal-btn primary" type="button" on:click={handleLogin}>Login</button>
+					<button class="modal-btn primary" type="button" onclick={handleLogin}>Login</button>
 					<button class="modal-btn secondary" type="button">Request invitation</button>
 				</div>
 			</div>
@@ -345,6 +265,25 @@
 </div>
 
 <style>
+	:global(html, body) {
+		margin: 0;
+		padding: 0;
+		width: 100%;
+		height: 100%;
+		background: #000;
+		overflow: hidden;
+	}
+
+	:global(body) {
+		touch-action: manipulation;
+		overscroll-behavior: none;
+	}
+
+	:global(#app) {
+		width: 100%;
+		height: 100%;
+	}
+
 	:root {
 		--bc-off: #e16a38;
 		--bc-hover: #377e7f;
@@ -353,62 +292,16 @@
 		--bc-panel-border: rgba(249, 248, 239, 0.48);
 	}
 
-	.controls {
-		max-width: 1440px;
-		margin: 0 auto 16px;
-		background: #1a1a1a;
-		color: white;
-		font: 14px/1.4 Arial, sans-serif;
-		border-radius: 10px;
-		overflow: hidden;
-	}
-
-	.accordion-toggle {
-		width: 100%;
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: 12px 14px;
-		background: #1a1a1a;
-		color: white;
-		border: 0;
-		cursor: pointer;
-		font: inherit;
-		text-align: left;
-	}
-
-	.accordion-panel {
-		padding: 0 12px 12px;
-		display: grid;
-		gap: 10px;
-		border-top: 1px solid rgba(255, 255, 255, 0.08);
-	}
-
-	.chevron {
-		transition: transform 0.2s ease;
-	}
-
-	.chevron.open {
-		transform: rotate(180deg);
-	}
-
-	.control {
-		display: grid;
-		gap: 4px;
-	}
-
-	.control input {
-		width: 100%;
-	}
-
 	.scene {
-		position: relative;
-		width: 100%;
-		max-width: 1440px;
-		aspect-ratio: 16 / 9;
+		position: fixed;
+		inset: 0;
+		width: 100vw;
+		height: 100vh;
+		max-width: none;
+		aspect-ratio: auto;
 		overflow: hidden;
 		background-color: #111;
-		background-image: url('https://static.wixstatic.com/media/f92ddd_9ae8a2bb729647bca09862f9875cb6b4~mv2.jpg');
+		background-image: url('https://www.boneclub.co.uk/exterior.jpg');
 		background-size: cover;
 		background-position: center;
 		isolation: auto;
@@ -430,7 +323,7 @@
 	.bg {
 		position: absolute;
 		inset: 0;
-		background-image: url('https://static.wixstatic.com/media/f92ddd_9ae8a2bb729647bca09862f9875cb6b4~mv2.jpg');
+		background-image: url('https://www.boneclub.co.uk/exterior.jpg');
 		background-size: cover;
 		background-position: center;
 	}
@@ -467,6 +360,7 @@
 
 	.interior-video-layer.visible {
 		opacity: 1;
+		pointer-events: auto;
 	}
 
 	.interior-video {
@@ -475,6 +369,56 @@
 		object-fit: cover;
 		display: block;
 		background: #000;
+	}
+
+	.floating-panels {
+		position: absolute;
+		inset: 0;
+		z-index: 4;
+		display: grid;
+		grid-template-columns: repeat(5, minmax(0, 1fr));
+		gap: 16px;
+		align-items: end;
+		padding: 28px;
+		pointer-events: none;
+	}
+
+	.floating-panel {
+		align-self: end;
+		padding: 18px 18px 16px;
+		border-radius: 18px;
+		background: rgba(10, 10, 10, 0.42);
+		border: 1px solid rgba(249, 248, 239, 0.24);
+		box-shadow:
+			0 20px 40px rgba(0, 0, 0, 0.28),
+			inset 0 1px 0 rgba(249, 248, 239, 0.06);
+		backdrop-filter: blur(10px);
+		-webkit-backdrop-filter: blur(10px);
+		opacity: 0;
+		transform: translateY(26px);
+		transition:
+			opacity 0.9s ease,
+			transform 0.9s ease;
+	}
+
+	.floating-panels.visible .floating-panel {
+		opacity: 1;
+		transform: translateY(0);
+	}
+
+	.floating-panel h3 {
+		margin: 0 0 8px;
+		font-size: 18px;
+		font-weight: 600;
+		letter-spacing: 0.02em;
+		color: var(--bc-bone);
+	}
+
+	.floating-panel p {
+		margin: 0;
+		font-size: 13px;
+		line-height: 1.45;
+		color: rgba(249, 248, 239, 0.82);
 	}
 
 	.enter-wrap {
@@ -745,11 +689,14 @@
 		transition: opacity 1.8s ease;
 	}
 
-	@media (max-width: 640px) {
-		.scene {
-			aspect-ratio: 16 / 11;
+	@media (max-width: 900px) {
+		.floating-panels {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			align-content: end;
 		}
+	}
 
+	@media (max-width: 640px) {
 		.steam {
 			opacity: 0.38;
 		}
@@ -764,6 +711,25 @@
 
 		.modal-body {
 			padding: 10px 20px 20px;
+		}
+
+		.floating-panels {
+			grid-template-columns: 1fr;
+			padding: 16px;
+			gap: 10px;
+		}
+
+		.floating-panel {
+			padding: 14px 14px 13px;
+			border-radius: 14px;
+		}
+
+		.floating-panel h3 {
+			font-size: 16px;
+		}
+
+		.floating-panel p {
+			font-size: 12px;
 		}
 	}
 
