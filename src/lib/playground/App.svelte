@@ -190,7 +190,7 @@
 			on:ended={handleInteriorEnded}
 		>
 			<source
-				src="https://video.wixstatic.com/video/f92ddd_48f59d0edaa742bb8960b9c19e940dfd/1080p/mp4/file.mp4"
+				src="https://video.wixstatic.com/video/f92ddd_6cd1eedb3a2d4ffeacd309bf30545c65/1080p/mp4/file.mp4"
 				type="video/mp4"
 			/>
 		</video>
