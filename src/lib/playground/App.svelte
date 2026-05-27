@@ -171,9 +171,9 @@
 				webkit-playsinline="true"
 			>
 				{#if isSafari}
-					<source src="https://www.boneclub.co.uk/steam2.mov" type='video/mp4; codecs="hvc1"' />
+					<source src="https://video.wixstatic.com/video/f92ddd_ee6ec0b4d5fc431ba40a1fd122fedb03/1080p/mp4/file.mp4" type='video/mp4; codecs="hvc1"' />
 				{:else}
-					<source src="https://www.boneclub.co.uk/smoke.webm" type="video/webm" />
+					<source src="https://video.wixstatic.com/video/f92ddd_683efc8d19ff4a179bf528450e49be03/360p/mp4/file.mp4" type="video/webm" />
 				{/if}
 			</video>
 		</div>
@@ -190,7 +190,7 @@
 			on:ended={handleInteriorEnded}
 		>
 			<source
-				src="https://www.boneclub.co.uk/have_bones_character_welcome_y_Kling_30__45175.mp4"
+				src="https://video.wixstatic.com/video/f92ddd_48f59d0edaa742bb8960b9c19e940dfd/1080p/mp4/file.mp4"
 				type="video/mp4"
 			/>
 		</video>
@@ -272,7 +272,7 @@
 		aspect-ratio: 16 / 9;
 		overflow: hidden;
 		background-color: #111;
-		background-image: url('https://www.boneclub.co.uk/exterior.jpg');
+		background-image: url('https://static.wixstatic.com/media/f92ddd_9ae8a2bb729647bca09862f9875cb6b4~mv2.jpg');
 		background-size: cover;
 		background-position: center;
 		isolation: auto;
@@ -294,7 +294,7 @@
 	.bg {
 		position: absolute;
 		inset: 0;
-		background-image: url('https://www.boneclub.co.uk/exterior.jpg');
+		background-image: url('https://static.wixstatic.com/media/f92ddd_9ae8a2bb729647bca09862f9875cb6b4~mv2.jpg');
 		background-size: cover;
 		background-position: center;
 	}
