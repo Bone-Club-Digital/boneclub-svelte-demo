@@ -7,6 +7,7 @@
 		!/chrome|android|crios|fxios|edgios/i.test(ua);
 
 	let isMobile = false;
+	let accordionOpen = false;
 	let entering = false;
 	let buttonFading = false;
 	let showLoginModal = false;
@@ -15,7 +16,6 @@
 	let interiorVideoVisible = false;
 	let interiorVideoReady = false;
 	let interiorVideoEl;
-	let showFloatingPanels = false;
 
 	let steamLeft = 78;
 	let steamTop = 68;
@@ -45,29 +45,6 @@
 	const zoomDuration = 4800;
 	const modalLeadTime = 3000;
 	const blackCoverDuration = 2200;
-
-	const panels = [
-		{
-			title: 'Play',
-			text: 'Enter live matches, private rooms and club tables for elegant competitive play.'
-		},
-		{
-			title: 'Learn',
-			text: 'Sharpen your game with lessons, strategy, analysis and expert guidance.'
-		},
-		{
-			title: 'Watch',
-			text: 'Enjoy featured matches, streams and cinematic backgammon content from the club.'
-		},
-		{
-			title: 'Social',
-			text: 'Meet members, join conversations and experience the atmosphere beyond the board.'
-		},
-		{
-			title: 'Shop',
-			text: 'Explore boards, club goods and carefully curated Bone Club pieces.'
-		}
-	];
 
 	onMount(() => {
 		const mq = window.matchMedia('(max-width: 640px)');
@@ -99,7 +76,6 @@
 		loggingIn = true;
 		showLoginModal = false;
 		interiorVideoVisible = false;
-		showFloatingPanels = false;
 
 		setTimeout(async () => {
 			interiorVideoVisible = true;
@@ -120,25 +96,147 @@
 		interiorVideoReady = true;
 	}
 
-	function handleInteriorEnded() {
-		showFloatingPanels = true;
-	}
-
-	const cameraTransform = $derived(
-	loggingIn
+	$: cameraTransform = loggingIn
 		? `translate(${loginZoomX}%, ${loginZoomY}%) scale(${loginZoomScale})`
 		: entering
 			? `translate(${zoomX}%, ${zoomY}%) scale(${zoomScale})`
-			: 'translate(0%, 0%) scale(1)'
-);
+			: 'translate(0%, 0%) scale(1)';
 </script>
+
+<div class="controls">
+	<button
+		class="accordion-toggle"
+		type="button"
+		on:click={() => (accordionOpen = !accordionOpen)}
+		aria-expanded={accordionOpen}
+	>
+		<span>Steam + button + camera controls</span>
+		<span class:open={accordionOpen} class="chevron">▼</span>
+	</button>
+
+	{#if accordionOpen}
+		<div class="accordion-panel">
+			<h3>Desktop</h3>
+
+			<div class="control">
+				<label>Left: {steamLeft}%</label>
+				<input type="range" min="-50" max="100" step="0.5" bind:value={steamLeft} />
+			</div>
+
+			<div class="control">
+				<label>Top: {steamTop}%</label>
+				<input type="range" min="-50" max="100" step="0.5" bind:value={steamTop} />
+			</div>
+
+			<div class="control">
+				<label>Width: {steamWidth}vw</label>
+				<input type="range" min="10" max="120" step="1" bind:value={steamWidth} />
+			</div>
+
+			<div class="control">
+				<label>Translate X: {steamTranslateX}%</label>
+				<input type="range" min="-100" max="100" step="1" bind:value={steamTranslateX} />
+			</div>
+
+			<div class="control">
+				<label>Translate Y: {steamTranslateY}%</label>
+				<input type="range" min="-100" max="100" step="1" bind:value={steamTranslateY} />
+			</div>
+
+			<h3>Mobile</h3>
+
+			<div class="control">
+				<label>Left: {steamLeftMobile}%</label>
+				<input type="range" min="-50" max="100" step="0.5" bind:value={steamLeftMobile} />
+			</div>
+
+			<div class="control">
+				<label>Top: {steamTopMobile}%</label>
+				<input type="range" min="-50" max="100" step="0.5" bind:value={steamTopMobile} />
+			</div>
+
+			<div class="control">
+				<label>Width: {steamWidthMobile}vw</label>
+				<input type="range" min="10" max="150" step="1" bind:value={steamWidthMobile} />
+			</div>
+
+			<div class="control">
+				<label>Translate X: {steamTranslateXMobile}%</label>
+				<input type="range" min="-100" max="100" step="1" bind:value={steamTranslateXMobile} />
+			</div>
+
+			<div class="control">
+				<label>Translate Y: {steamTranslateYMobile}%</label>
+				<input type="range" min="-100" max="100" step="1" bind:value={steamTranslateYMobile} />
+			</div>
+
+			<h3>Button</h3>
+
+			<div class="control">
+				<label>Left: {buttonLeft}%</label>
+				<input type="range" min="0" max="100" step="0.5" bind:value={buttonLeft} />
+			</div>
+
+			<div class="control">
+				<label>Top: {buttonTop}%</label>
+				<input type="range" min="0" max="100" step="0.5" bind:value={buttonTop} />
+			</div>
+
+			<div class="control">
+				<label>Translate X: {buttonTranslateX}%</label>
+				<input type="range" min="-100" max="100" step="1" bind:value={buttonTranslateX} />
+			</div>
+
+			<div class="control">
+				<label>Translate Y: {buttonTranslateY}%</label>
+				<input type="range" min="-100" max="100" step="1" bind:value={buttonTranslateY} />
+			</div>
+
+			<h3>Camera</h3>
+
+			<div class="control">
+				<label>Zoom scale: {zoomScale}</label>
+				<input type="range" min="1" max="4" step="0.01" bind:value={zoomScale} />
+			</div>
+
+			<div class="control">
+				<label>Zoom X: {zoomX}%</label>
+				<input type="range" min="-50" max="50" step="0.5" bind:value={zoomX} />
+			</div>
+
+			<div class="control">
+				<label>Zoom Y: {zoomY}%</label>
+				<input type="range" min="-50" max="50" step="0.5" bind:value={zoomY} />
+			</div>
+
+			<h3>Login zoom</h3>
+
+			<div class="control">
+				<label>Login zoom scale: {loginZoomScale}</label>
+				<input type="range" min="1" max="6" step="0.01" bind:value={loginZoomScale} />
+			</div>
+
+			<div class="control">
+				<label>Login zoom X: {loginZoomX}%</label>
+				<input type="range" min="-50" max="50" step="0.5" bind:value={loginZoomX} />
+			</div>
+
+			<div class="control">
+				<label>Login zoom Y: {loginZoomY}%</label>
+				<input type="range" min="-50" max="50" step="0.5" bind:value={loginZoomY} />
+			</div>
+
+			<p>Currently using: <strong>{isMobile ? 'mobile' : 'desktop'}</strong> values</p>
+			<p>Interior video ready: <strong>{interiorVideoReady ? 'yes' : 'loading'}</strong></p>
+		</div>
+	{/if}
+</div>
 
 <div
 	class="scene"
 	class:entering={entering}
 	class:logging-in={loggingIn}
 	class:interior-visible={interiorVideoVisible}
-	class:show-panels={showFloatingPanels}
 >
 	<div
 		class="camera"
@@ -161,21 +259,21 @@
 			"
 		>
 			<video
-				class="steam"
-				class:safari={isSafari}
-				autoplay
-				muted
-				loop
-				playsinline
-				preload="auto"
-				webkit-playsinline="true"
-			>
-				{#if isSafari}
-					<source src="https://video.wixstatic.com/video/f92ddd_ee6ec0b4d5fc431ba40a1fd122fedb03/1080p/mp4/file.mp4" type='video/mp4; codecs="hvc1"' />
-				{:else}
-					<source src="https://video.wixstatic.com/video/f92ddd_683efc8d19ff4a179bf528450e49be03/360p/mp4/file.mp4" type="video/webm" />
-				{/if}
-			</video>
+	class="steam"
+	class:safari={isSafari}
+	autoplay
+	muted
+	loop
+	playsinline
+	preload="auto"
+	webkit-playsinline="true"
+>
+	{#if isSafari}
+		<source src="https://video.wixstatic.com/video/f92ddd_ee6ec0b4d5fc431ba40a1fd122fedb03/1080p/mp4/file.mp4" type='video/mp4; codecs="hvc1"' />
+	{:else}
+		<source src="https://video.wixstatic.com/video/f92ddd_683efc8d19ff4a179bf528450e49be03/360p/mp4/file.mp4" type="video/webm" />
+	{/if}
+</video>
 		</div>
 	</div>
 
@@ -187,22 +285,12 @@
 			preload="auto"
 			on:loadeddata={handleInteriorReady}
 			on:canplaythrough={handleInteriorReady}
-			on:ended={handleInteriorEnded}
 		>
 			<source
 				src="https://video.wixstatic.com/video/f92ddd_6cd1eedb3a2d4ffeacd309bf30545c65/1080p/mp4/file.mp4"
 				type="video/mp4"
 			/>
 		</video>
-
-		<div class="floating-panels" class:visible={showFloatingPanels}>
-			{#each panels as panel, index}
-				<div class="floating-panel" style={`transition-delay: ${index * 0.35}s;`}>
-					<h3>{panel.title}</h3>
-					<p>{panel.text}</p>
-				</div>
-			{/each}
-		</div>
 	</div>
 
 	<div
@@ -265,6 +353,54 @@
 		--bc-panel-border: rgba(249, 248, 239, 0.48);
 	}
 
+	.controls {
+		max-width: 1440px;
+		margin: 0 auto 16px;
+		background: #1a1a1a;
+		color: white;
+		font: 14px/1.4 Arial, sans-serif;
+		border-radius: 10px;
+		overflow: hidden;
+	}
+
+	.accordion-toggle {
+		width: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 12px 14px;
+		background: #1a1a1a;
+		color: white;
+		border: 0;
+		cursor: pointer;
+		font: inherit;
+		text-align: left;
+	}
+
+	.accordion-panel {
+		padding: 0 12px 12px;
+		display: grid;
+		gap: 10px;
+		border-top: 1px solid rgba(255, 255, 255, 0.08);
+	}
+
+	.chevron {
+		transition: transform 0.2s ease;
+	}
+
+	.chevron.open {
+		transform: rotate(180deg);
+	}
+
+	.control {
+		display: grid;
+		gap: 4px;
+	}
+
+	.control input {
+		width: 100%;
+	}
+
 	.scene {
 		position: relative;
 		width: 100%;
@@ -316,7 +452,7 @@
 
 	.steam.safari {
 		mix-blend-mode: screen;
-		opacity: 0;
+		opacity: 1;
 	}
 
 	.interior-video-layer {
@@ -331,7 +467,6 @@
 
 	.interior-video-layer.visible {
 		opacity: 1;
-		pointer-events: auto;
 	}
 
 	.interior-video {
@@ -340,56 +475,6 @@
 		object-fit: cover;
 		display: block;
 		background: #000;
-	}
-
-	.floating-panels {
-		position: absolute;
-		inset: 0;
-		z-index: 4;
-		display: grid;
-		grid-template-columns: repeat(5, minmax(0, 1fr));
-		gap: 16px;
-		align-items: end;
-		padding: 28px;
-		pointer-events: none;
-	}
-
-	.floating-panel {
-		align-self: end;
-		padding: 18px 18px 16px;
-		border-radius: 18px;
-		background: rgba(10, 10, 10, 0.42);
-		border: 1px solid rgba(249, 248, 239, 0.24);
-		box-shadow:
-			0 20px 40px rgba(0, 0, 0, 0.28),
-			inset 0 1px 0 rgba(249, 248, 239, 0.06);
-		backdrop-filter: blur(10px);
-		-webkit-backdrop-filter: blur(10px);
-		opacity: 0;
-		transform: translateY(26px);
-		transition:
-			opacity 0.9s ease,
-			transform 0.9s ease;
-	}
-
-	.floating-panels.visible .floating-panel {
-		opacity: 1;
-		transform: translateY(0);
-	}
-
-	.floating-panel h3 {
-		margin: 0 0 8px;
-		font-size: 18px;
-		font-weight: 600;
-		letter-spacing: 0.02em;
-		color: var(--bc-bone);
-	}
-
-	.floating-panel p {
-		margin: 0;
-		font-size: 13px;
-		line-height: 1.45;
-		color: rgba(249, 248, 239, 0.82);
 	}
 
 	.enter-wrap {
@@ -660,13 +745,6 @@
 		transition: opacity 1.8s ease;
 	}
 
-	@media (max-width: 900px) {
-		.floating-panels {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-			align-content: end;
-		}
-	}
-
 	@media (max-width: 640px) {
 		.scene {
 			aspect-ratio: 16 / 11;
@@ -686,25 +764,6 @@
 
 		.modal-body {
 			padding: 10px 20px 20px;
-		}
-
-		.floating-panels {
-			grid-template-columns: 1fr;
-			padding: 16px;
-			gap: 10px;
-		}
-
-		.floating-panel {
-			padding: 14px 14px 13px;
-			border-radius: 14px;
-		}
-
-		.floating-panel h3 {
-			font-size: 16px;
-		}
-
-		.floating-panel p {
-			font-size: 12px;
 		}
 	}
 
