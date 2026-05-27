@@ -269,9 +269,9 @@
 	webkit-playsinline="true"
 >
 	{#if isSafari}
-		<source src="https://video.wixstatic.com/video/f92ddd_ee6ec0b4d5fc431ba40a1fd122fedb03/1080p/mp4/file.mp4" type='video/mp4; codecs="hvc1"' />
+		<source src="" type='video/mp4; codecs="hvc1"' />
 	{:else}
-		<source src="https://video.wixstatic.com/video/f92ddd_683efc8d19ff4a179bf528450e49be03/360p/mp4/file.mp4" type="video/webm" />
+		<source src="" type="video/webm" />
 	{/if}
 </video>
 		</div>
